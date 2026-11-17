@@ -132,6 +132,31 @@ class CheckBet(unittest.TestCase):
     def test_duplicate_bet_id_fails(self):
         self.assertTrue(any("duplicate bet id" in p for p in problems(BUILDING + "\n" + BUILDING)))
 
+    def test_customer_evidence_rows_pass_when_complete(self):
+        table = (
+            "| Date | Who | Kind | What they did | Evidence | Criterion |\n"
+            "| --- | --- | --- | --- | --- | --- |\n"
+            "| 2026-11-20 | Agency owner A | usage | Added 4 sites | out/a.txt | 1 |\n"
+            "| 2026-11-21 | Agency owner B | interview | Said they would pay | notes/b.md | - |\n"
+        )
+        self.assertEqual(problems(BUILDING.replace("None.\n", table)), [])
+
+    def test_customer_evidence_row_rules(self):
+        table = (
+            "| Date | Who | Kind | What they did | Evidence | Criterion |\n"
+            "| --- | --- | --- | --- | --- | --- |\n"
+            "| 2026-11-20 | A | compliment | Liked it | notes/a.md | 1 |\n"
+            "| 2026-11-21 | B | payment | Paid |  | 9 |\n"
+        )
+        found = problems(BUILDING.replace("None.\n", table))
+        self.assertTrue(any("kind 'compliment'" in p for p in found), found)
+        self.assertTrue(any("needs who, what they did, and evidence" in p for p in found), found)
+        self.assertTrue(any("criterion '9'" in p for p in found), found)
+
+    def test_a_bet_with_users_needs_customer_evidence(self):
+        text = BUILDING.replace("**Status.** Building. Slice 1.", "**Status.** With users")
+        self.assertTrue(any("needs a customer evidence table" in p for p in problems(text)))
+
 
 if __name__ == "__main__":
     unittest.main()

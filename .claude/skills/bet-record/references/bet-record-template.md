@@ -25,7 +25,8 @@
 
 ### Customer evidence
 
-<Who used it, how often, what they said, and what they would pay.>
+| Date | Who | Kind | What they did | Evidence | Criterion |
+| --- | --- | --- | --- | --- | --- |
 
 ### Decision memo
 

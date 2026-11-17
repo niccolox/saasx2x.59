@@ -22,6 +22,8 @@ SUBSECTIONS = (
 )
 CRITERIA_HEADER = ["#", "Criterion", "Threshold", "Evidence that counts", "Result"]
 LOG_HEADER = ["Date", "Unit", "Evidence"]
+EVIDENCE_HEADER = ["Date", "Who", "Kind", "What they did", "Evidence", "Criterion"]
+EVIDENCE_KINDS = ("interview", "usage", "commitment", "payment")
 
 BET_HEADING = re.compile(r"^## (BET-\d{3}): (\S.*)$")
 FIELD_LINE = re.compile(r"^\*\*([^*]+)\.\*\* ?(.*)$")
@@ -151,6 +153,7 @@ def check_bet(bet: Bet, today: dt.date, path: str) -> list[str]:
     elif not rows:
         report(bet.line, "kill criteria table has no rows")
     results = []
+    numbers = {cells[0] for _, cells in rows} if header == CRITERIA_HEADER else set()
     for line, cells in rows if header == CRITERIA_HEADER else []:
         if len(cells) != len(CRITERIA_HEADER):
             report(line, "kill criteria row has the wrong number of cells")
@@ -172,6 +175,25 @@ def check_bet(bet: Bet, today: dt.date, path: str) -> list[str]:
             report(line, "build log row must start with a YYYY-MM-DD date and have 3 cells")
         elif not cells[1] or not cells[2]:
             report(line, "build log row needs a unit and evidence")
+
+    header, rows = table(bet.sections["Customer evidence"])
+    if header is not None and header != EVIDENCE_HEADER:
+        report(
+            bet.line, f"customer evidence table header must be: | {' | '.join(EVIDENCE_HEADER)} |"
+        )
+    elif header is None and status == "With users":
+        report(status_line, "a bet with users needs a customer evidence table with rows")
+    for line, cells in rows if header == EVIDENCE_HEADER else []:
+        if len(cells) != len(EVIDENCE_HEADER) or not DATE.match(cells[0]):
+            report(line, "customer evidence row must start with a YYYY-MM-DD date and have 6 cells")
+            continue
+        _, who, kind, did, evidence, criterion = cells
+        if not who or not did or not evidence:
+            report(line, "customer evidence row needs who, what they did, and evidence")
+        if kind not in EVIDENCE_KINDS:
+            report(line, f"kind '{kind}' is not one of: {', '.join(EVIDENCE_KINDS)}")
+        if criterion != "-" and criterion not in numbers:
+            report(line, f"criterion '{criterion}' is not a kill criterion number or '-'")
 
     if status.startswith("Decided"):
         if "open" in results:
