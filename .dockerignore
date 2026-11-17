@@ -1,0 +1,13 @@
+.git
+.venv
+.local
+.audit
+.claude
+.pytest_cache
+.ruff_cache
+**/__pycache__
+docs
+tests
+web/node_modules
+web/dist
+web/src/api.gen.ts

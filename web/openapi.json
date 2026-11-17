@@ -1,0 +1,377 @@
+{
+  "components": {
+    "schemas": {
+      "CheckKind": {
+        "enum": [
+          "https"
+        ],
+        "title": "CheckKind",
+        "type": "string"
+      },
+      "CheckStatus": {
+        "additionalProperties": false,
+        "description": "One row of the page: one check of one active target.",
+        "properties": {
+          "check_id": {
+            "format": "uuid",
+            "title": "Check Id",
+            "type": "string"
+          },
+          "day": {
+            "$ref": "#/components/schemas/SlotCounts"
+          },
+          "hostname": {
+            "title": "Hostname",
+            "type": "string"
+          },
+          "interval_s": {
+            "minimum": 60.0,
+            "title": "Interval S",
+            "type": "integer"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CheckKind"
+          },
+          "last": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LastResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "port": {
+            "maximum": 65535.0,
+            "minimum": 1.0,
+            "title": "Port",
+            "type": "integer"
+          },
+          "strip": {
+            "$ref": "#/components/schemas/Strip"
+          },
+          "week": {
+            "$ref": "#/components/schemas/SlotCounts"
+          }
+        },
+        "required": [
+          "check_id",
+          "hostname",
+          "port",
+          "kind",
+          "interval_s",
+          "last",
+          "strip",
+          "day",
+          "week"
+        ],
+        "title": "CheckStatus",
+        "type": "object"
+      },
+      "Dashboard": {
+        "additionalProperties": false,
+        "description": "The whole page at one instant. The only body of `GET /api/dashboard`.",
+        "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/CheckStatus"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "refresh_after_s": {
+            "title": "Refresh After S",
+            "type": "integer"
+          },
+          "worker": {
+            "$ref": "#/components/schemas/WorkerStatus"
+          }
+        },
+        "required": [
+          "generated_at",
+          "refresh_after_s",
+          "worker",
+          "checks"
+        ],
+        "title": "Dashboard",
+        "type": "object"
+      },
+      "LastResult": {
+        "additionalProperties": false,
+        "description": "The newest slot of a check that has a row. It can be older than the strip.",
+        "properties": {
+          "reason": {
+            "$ref": "#/components/schemas/Reason"
+          },
+          "slot_start": {
+            "format": "date-time",
+            "title": "Slot Start",
+            "type": "string"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/Verdict",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "slot_start",
+          "reason",
+          "verdict"
+        ],
+        "title": "LastResult",
+        "type": "object"
+      },
+      "Mark": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Verdict"
+          },
+          {
+            "const": "not_observed",
+            "type": "string"
+          }
+        ]
+      },
+      "Reason": {
+        "description": "The rule that gave the verdict. Each member owns its verdict, so the two cannot disagree.",
+        "enum": [
+          "cloudflare_challenge",
+          "cloudflare_block_page",
+          "rate_limited",
+          "status_ok",
+          "login_required",
+          "error_status",
+          "dns_not_found",
+          "tcp_failed",
+          "tls_failed",
+          "http_failed",
+          "dns_unavailable",
+          "probe_failed"
+        ],
+        "title": "Reason",
+        "type": "string"
+      },
+      "SlotCounts": {
+        "additionalProperties": false,
+        "description": "The expected slots of one span, counted by mark. The five numbers are disjoint.",
+        "properties": {
+          "blocked": {
+            "minimum": 0.0,
+            "title": "Blocked",
+            "type": "integer"
+          },
+          "down": {
+            "minimum": 0.0,
+            "title": "Down",
+            "type": "integer"
+          },
+          "expected": {
+            "description": "The number of expected slots. Always the sum of the five numbers.",
+            "readOnly": true,
+            "title": "Expected",
+            "type": "integer"
+          },
+          "inconclusive": {
+            "minimum": 0.0,
+            "title": "Inconclusive",
+            "type": "integer"
+          },
+          "not_observed": {
+            "minimum": 0.0,
+            "title": "Not Observed",
+            "type": "integer"
+          },
+          "up": {
+            "minimum": 0.0,
+            "title": "Up",
+            "type": "integer"
+          },
+          "up_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "up / (up + down). None when no slot is up or down.\n\n\"blocked\", \"inconclusive\" and \"not observed\" are not in the ratio. The page shows them\nas numbers beside it. The only owner of the uptime formula is this property.",
+            "readOnly": true,
+            "title": "Up Ratio"
+          }
+        },
+        "required": [
+          "up",
+          "down",
+          "blocked",
+          "inconclusive",
+          "not_observed",
+          "expected",
+          "up_ratio"
+        ],
+        "title": "SlotCounts",
+        "type": "object"
+      },
+      "Strip": {
+        "additionalProperties": false,
+        "description": "The last 24 hours of one check on a time axis.\n\nThe axis is [start, end). `end` is the end of the open slot, and `start` is `DAY` before the\nstart of the open slot. A part of the axis with no run is not a fault: the check did not\nexist then, or the slot is open and has no row.",
+        "properties": {
+          "end": {
+            "format": "date-time",
+            "title": "End",
+            "type": "string"
+          },
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/StripRun"
+            },
+            "title": "Runs",
+            "type": "array"
+          },
+          "start": {
+            "format": "date-time",
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "runs"
+        ],
+        "title": "Strip",
+        "type": "object"
+      },
+      "StripRun": {
+        "additionalProperties": false,
+        "description": "Slots in sequence that have the same judgement. One mark on the strip.",
+        "properties": {
+          "end": {
+            "format": "date-time",
+            "title": "End",
+            "type": "string"
+          },
+          "mark": {
+            "$ref": "#/components/schemas/Mark",
+            "readOnly": true
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Reason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "start": {
+            "format": "date-time",
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "reason",
+          "mark"
+        ],
+        "title": "StripRun",
+        "type": "object"
+      },
+      "Verdict": {
+        "enum": [
+          "up",
+          "down",
+          "blocked",
+          "inconclusive"
+        ],
+        "title": "Verdict",
+        "type": "string"
+      },
+      "WorkerState": {
+        "enum": [
+          "idle",
+          "waiting",
+          "writing",
+          "stalled"
+        ],
+        "type": "string"
+      },
+      "WorkerStatus": {
+        "additionalProperties": false,
+        "description": "One line for the whole worker.\n\nidle:     no active check, so no row is due.\nwaiting:  no row yet, and the first row is not late.\nwriting:  the newest row is not late.\nstalled:  the newest row is late, or no row came in time. The page shows this state first.",
+        "properties": {
+          "expected_every_s": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Every S"
+          },
+          "newest_row_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Newest Row At"
+          },
+          "state": {
+            "$ref": "#/components/schemas/WorkerState"
+          }
+        },
+        "required": [
+          "state",
+          "newest_row_at",
+          "expected_every_s"
+        ],
+        "title": "WorkerStatus",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "SaaSX2X",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/dashboard": {
+      "get": {
+        "operationId": "get_dashboard_api_dashboard_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "description": "Postgres does not answer, or it has no schema."
+          }
+        },
+        "summary": "Get Dashboard"
+      }
+    }
+  }
+}

@@ -1,0 +1,94 @@
+[project]
+name = "saasx2x"
+version = "0.1.0"
+description = "SaaSX2X uptime monitor: an HTTPS check on port 443 for each target, written to Postgres, and a read-only dashboard."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.162.0",
+    "h11>=0.16",
+    "psycopg[binary,pool]>=3.2",
+    "pydantic>=2.10",
+    "pydantic-settings>=2.7",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+saasx2x = "saasx2x.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.9,<0.13"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.16.0",
+    "pyright>=1.1.400",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "pytest-playwright>=0.10.0",
+    "ruff>=0.9",
+    "trustme>=1.2",
+]
+
+[tool.uv.exclude-newer-package]
+# Each package that slice 2 added resolves to a release that is at least two weeks old.
+annotated-doc = "2026-11-02T00:00:00Z"
+anyio = "2026-11-02T00:00:00Z"
+click = "2026-11-02T00:00:00Z"
+fastapi = "2026-11-02T00:00:00Z"
+greenlet = "2026-11-02T00:00:00Z"
+httpcore2 = "2026-11-02T00:00:00Z"
+httpx2 = "2026-11-02T00:00:00Z"
+httpx2-jsfetch = "2026-11-02T00:00:00Z"
+opentelemetry-api = "2026-11-02T00:00:00Z"
+playwright = "2026-11-02T00:00:00Z"
+pyee = "2026-11-02T00:00:00Z"
+pytest-playwright = "2026-11-02T00:00:00Z"
+python-slugify = "2026-11-02T00:00:00Z"
+starlette = "2026-11-02T00:00:00Z"
+text-unidecode = "2026-11-02T00:00:00Z"
+truststore = "2026-11-02T00:00:00Z"
+uvicorn = "2026-11-02T00:00:00Z"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+include = ["*.py", "*.pyi", "**/pyproject.toml"]
+extend-exclude = ["docs", ".claude", ".local"]
+force-exclude = true
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "TID", "RUF", "ASYNC"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"psycopg".msg = "Only store.py talks to Postgres."
+"psycopg_pool".msg = "Only store.py talks to Postgres."
+"ssl".msg = "Only https_check.py does network I/O."
+"socket".msg = "Only https_check.py does network I/O."
+"h11".msg = "Only https_check.py does network I/O."
+"fastapi".msg = "Only web.py serves HTTP."
+"starlette".msg = "Only web.py serves HTTP."
+"uvicorn".msg = "Only web.py serves HTTP."
+
+[tool.ruff.lint.per-file-ignores]
+"src/saasx2x/store.py" = ["TID251"]
+"src/saasx2x/https_check.py" = ["TID251"]
+"src/saasx2x/web.py" = ["TID251"]
+"tests/**" = ["TID251"]
+
+[tool.pyright]
+include = ["src", "tests"]
+exclude = ["docs", ".venv"]
+typeCheckingMode = "standard"
+strict = ["src"]
+pythonVersion = "3.13"
+venvPath = "."
+venv = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = ["docs", ".venv", ".git", ".local"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = ["browser: drives Chromium; skips when Chromium or web/dist is missing"]
