@@ -1,0 +1,31 @@
+# Additions to pyproject.toml. The slice 1 entries stay.
+
+[project]
+dependencies = [
+    # slice 1 entries ...
+    "fastapi>=0.115",
+    "uvicorn>=0.34",          # no [standard] extra: no uvloop, no httptools, no watchfiles
+]
+
+[dependency-groups]
+dev = [
+    # slice 1 entries ...
+    "httpx>=0.28",            # ASGI transport for tests/test_web.py
+    "playwright>=1.50",       # tests/test_browser.py; run `uv run playwright install chromium` one time
+]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+# slice 1 entries ...
+"fastapi".msg = "Only web.py serves HTTP."
+"starlette".msg = "Only web.py serves HTTP."
+"uvicorn".msg = "Only web.py serves HTTP."
+
+[tool.ruff.lint.per-file-ignores]
+# slice 1 entries ...
+"src/saasx2x/web.py" = ["TID251"]
+
+[tool.ruff]
+extend-exclude = ["docs", ".claude", ".local", "web"]
+
+[tool.pytest.ini_options]
+markers = ["browser: needs web/dist and the Playwright Chromium; skipped with a reason when absent"]

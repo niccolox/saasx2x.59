@@ -1,0 +1,29 @@
+{
+  "name": "saasx2x-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen": "openapi-typescript openapi.json -o src/api.gen.ts",
+    "predev": "npm run gen",
+    "dev": "vite",
+    "prebuild": "npm run gen",
+    "build": "tsc --noEmit && vite build",
+    "pretest": "npm run gen",
+    "test": "tsc --noEmit && vitest run"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "jsdom": "^26.0.0",
+    "openapi-typescript": "^7.0.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.0.0",
+    "vitest": "^3.0.0"
+  }
+}
