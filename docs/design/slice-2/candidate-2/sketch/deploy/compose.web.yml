@@ -1,0 +1,17 @@
+# The new service in compose.yml. `db` and `worker` do not change.
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SAASX2X_DATABASE_URL: postgresql://saasx2x:saasx2x@db:5432/saasx2x
+      SAASX2X_WEB_HOST: 0.0.0.0      # inside the container only
+      SAASX2X_WEB_PORT: "55441"
+    ports:
+      - "127.0.0.1:55441:55441"      # the host side binds 127.0.0.1 only
+    # No `saasx2x migrate` here: the web process never writes. The worker service migrates.
+    # Before that, the API answers 503 "not migrated" and the page shows it.
+    command: ["saasx2x", "web"]

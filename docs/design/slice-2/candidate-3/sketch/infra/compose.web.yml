@@ -1,0 +1,22 @@
+# The new service. Add it under `services:` in compose.yml. `db` and `worker` do not change.
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      # The host side is loopback only. The test `test_compose_publishes_web_on_loopback` checks it.
+      - "127.0.0.1:55441:55441"
+    environment:
+      SAASX2X_DATABASE_URL: postgresql://saasx2x:saasx2x@db:5432/saasx2x
+      SAASX2X_WEB_HOST: 0.0.0.0   # inside the container only; see config_cli_additions.py
+      SAASX2X_WEB_PORT: "55441"
+    command: ["saasx2x", "web"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:55441/healthz', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+# `web` does not run `saasx2x migrate`. Only the worker migrates. Before the worker finishes the
+# first migration, /api/status answers 503 "run saasx2x migrate", and the page shows that text.

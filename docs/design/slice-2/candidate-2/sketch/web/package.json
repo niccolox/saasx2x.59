@@ -1,0 +1,31 @@
+{
+  "name": "saasx2x-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen": "json2ts -i src/generated/dashboard.schema.json -o src/generated/dashboard.ts --no-additionalProperties --unreachableDefinitions",
+    "predev": "npm run gen",
+    "dev": "vite",
+    "prebuild": "npm run gen",
+    "build": "tsc --noEmit && vite build",
+    "pretest": "npm run gen",
+    "test": "vitest run",
+    "pretypecheck": "npm run gen",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "16.3.0",
+    "@types/react": "19.1.8",
+    "@types/react-dom": "19.1.6",
+    "@vitejs/plugin-react": "4.6.0",
+    "jsdom": "26.1.0",
+    "json-schema-to-typescript": "15.0.4",
+    "typescript": "5.8.3",
+    "vite": "7.0.4",
+    "vitest": "3.2.4"
+  }
+}

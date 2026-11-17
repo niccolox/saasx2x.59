@@ -1,0 +1,19 @@
+# Add this service to compose.yml. The services `db` and `worker` stay as they are.
+# Also add `image: saasx2x:local` to `worker`, so the two services use one image.
+services:
+  web:
+    build: .
+    image: saasx2x:local
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SAASX2X_DATABASE_URL: postgresql://saasx2x:saasx2x@db:5432/saasx2x
+      # Inside the container only. The port map below binds the host side to 127.0.0.1.
+      SAASX2X_WEB_HOST: 0.0.0.0
+    ports:
+      - "127.0.0.1:55441:55441"
+    # No `saasx2x migrate` here: the web process cannot write. The worker service migrates.
+    # Until the schema is there, the API answers 503 and the page says so.
+    command: ["saasx2x", "web"]

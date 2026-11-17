@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: saasx2x
+      POSTGRES_PASSWORD: saasx2x
+      POSTGRES_DB: saasx2x
+    ports:
+      - "127.0.0.1:55440:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saasx2x -d saasx2x"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  worker:
+    build: .
+    image: saasx2x:local
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SAASX2X_DATABASE_URL: postgresql://saasx2x:saasx2x@db:5432/saasx2x
+      SAASX2X_PROBE_ID: ${SAASX2X_PROBE_ID:-local-1}
+    command: ["sh", "-c", "saasx2x migrate && exec saasx2x worker"]
+
+  web:
+    build: .
+    image: saasx2x:local
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # A different name from SAASX2X_DATABASE_URL, so a URL for the host never reaches the
+      # container, where 127.0.0.1 is the container itself.
+      SAASX2X_DATABASE_URL: ${SAASX2X_WEB_DATABASE_URL:-postgresql://saasx2x:saasx2x@db:5432/saasx2x}
+      # Inside the container only. The port map below binds the host side to 127.0.0.1.
+      SAASX2X_WEB_HOST: 0.0.0.0
+    ports:
+      - "127.0.0.1:55441:55441"
+    # No `saasx2x migrate` here: the web process cannot write. The worker service migrates.
+    # Until the schema is there, the API answers 503 and the page says so.
+    command: ["saasx2x", "web"]
+
+volumes:
+  db-data:
