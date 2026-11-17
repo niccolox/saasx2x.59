@@ -1,33 +1,20 @@
 import shutil
 from datetime import UTC, datetime, timedelta
-from ipaddress import ip_address
 from pathlib import Path
 
 import psycopg
 import pytest
 
-from saasx2x.domain import AccountSlug, DnsFailed, HttpResponded, HttpsObservation, ProbeId
+from saasx2x.domain import AccountSlug, DnsFailed, HttpsObservation
 from saasx2x.domain import parse_hostname as host
 from saasx2x.store import MIGRATIONS_DIR, MigrationChanged, Store
 from saasx2x.verdict import CheckResult
 from saasx2x.worker import ScheduledCheck, due_checks
 from tests.conftest import scratch_database
+from tests.results import PROBE, UP
 
 OWNER = AccountSlug("owner")
-PROBE = ProbeId("test-probe")
 MINUTE = datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
-UP = HttpResponded(
-    ip=ip_address("192.0.2.1"),
-    dns_ms=1,
-    tcp_connect_ms=1,
-    tls_handshake_ms=1,
-    http_ms=1,
-    status=200,
-    server=None,
-    cf_mitigated=None,
-    cf_ray=None,
-    body_head=None,
-)
 
 
 def result_of(run: ScheduledCheck, observation: HttpsObservation) -> CheckResult:

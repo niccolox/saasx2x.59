@@ -35,7 +35,7 @@ export function App(): ReactElement {
 }
 
 /** "STALLED - SaaSX2X", "2 down - SaaSX2X", or "SaaSX2X", for a browser tab that is not in front. */
-export function pageTitle(dashboard: Dashboard): string {
+function pageTitle(dashboard: Dashboard): string {
   if (dashboard.worker.state === "stalled") return "STALLED - SaaSX2X";
   const down = dashboard.checks.filter((check) => check.last?.verdict === "down").length;
   return down > 0 ? `${down} down - SaaSX2X` : "SaaSX2X";

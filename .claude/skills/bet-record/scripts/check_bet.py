@@ -84,11 +84,7 @@ def table(rows: list[tuple[int, str]]) -> tuple[list[str] | None, list[tuple[int
     ]
     if not cells:
         return None, []
-    header, body = (
-        cells[0][1],
-        [c for c in cells[1:] if not all(set(x) <= set("-: ") for x in c[1])],
-    )
-    return header, body
+    return cells[0][1], [c for c in cells[1:] if not all(set(x) <= set("-: ") for x in c[1])]
 
 
 def first_word_value(value: str) -> str:
@@ -133,12 +129,12 @@ def check_bet(bet: Bet, today: dt.date, path: str) -> list[str]:
     past_framing = status in STATUSES and status != "Framing"
     if past_framing:
         for name in ("Criteria confirmed", "Decision date"):
-            if dates.get(name) is None:
+            if dates[name] is None:
                 report(
                     bet.fields[name][1],
                     f"status is '{status}', so '{name}' must be a date set before the build starts",
                 )
-    confirmed, decision = dates.get("Criteria confirmed"), dates.get("Decision date")
+    confirmed, decision = dates["Criteria confirmed"], dates["Decision date"]
     if confirmed and decision and decision < confirmed:
         report(
             bet.fields["Decision date"][1],

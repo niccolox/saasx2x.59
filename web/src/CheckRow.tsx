@@ -27,7 +27,7 @@ export function CheckRow(props: { check: CheckStatus; serverNow: number }): Reac
       <td data-label="Last result">
         <Last last={check.last} serverNow={serverNow} />
       </td>
-      <td data-label="Last 24 hours" className="strip-cell">
+      <td data-label="Last 24 hours">
         <Strip strip={check.strip} />
       </td>
       <td>

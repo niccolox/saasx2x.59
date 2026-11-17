@@ -6,7 +6,7 @@ import { serverNowMs } from "./time";
 /** After a failure, the next request starts after this time. */
 export const RETRY_AFTER_MS = 5_000;
 /** A request with no answer after this time fails, so a hung server shows as a failure. */
-export const REQUEST_TIMEOUT_MS = 15_000;
+const REQUEST_TIMEOUT_MS = 15_000;
 
 /**
  * What the page knows about its own data. A stalled page is as bad as a stalled worker, so a

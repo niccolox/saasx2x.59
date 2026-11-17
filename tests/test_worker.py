@@ -1,15 +1,13 @@
 import asyncio
-from collections.abc import Awaitable, Callable, Sequence
+from collections.abc import Sequence
 from contextlib import suppress
 from datetime import UTC, datetime, timedelta
-from ipaddress import ip_address
 from uuid import uuid4
 
 from saasx2x.domain import (
     AccountId,
     ActiveCheck,
     CheckId,
-    HttpResponded,
     HttpsObservation,
     ProbeId,
     Slot,
@@ -17,26 +15,13 @@ from saasx2x.domain import (
 )
 from saasx2x.store import ResultKey
 from saasx2x.verdict import CheckResult
-from saasx2x.worker import offset, run_worker
+from saasx2x.worker import Observe, offset, run_worker
+from tests.results import UP
 from tests.virtual_time import clock_from, run_virtual
 
 HOUR = datetime(2026, 1, 1, tzinfo=UTC)
 PROBE = ProbeId("local-1")
 CHECK_TIME = timedelta(seconds=30)
-UP = HttpResponded(
-    ip=ip_address("192.0.2.1"),
-    dns_ms=1,
-    tcp_connect_ms=1,
-    tls_handshake_ms=1,
-    http_ms=1,
-    status=200,
-    server=None,
-    cf_mitigated=None,
-    cf_ray=None,
-    body_head=None,
-)
-
-type Observe = Callable[[ActiveCheck], Awaitable[HttpsObservation]]
 
 
 class MemoryStore:

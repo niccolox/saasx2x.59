@@ -1,4 +1,3 @@
-// The strip of the last 24 hours. SVG, one <rect> for each rectangle of `layoutStrip`.
 import { type ReactElement, type RefObject, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Mark, Strip as StripData, StripRun } from "./api";
 import { layoutStrip, type StripRect } from "./layoutStrip";
@@ -6,7 +5,7 @@ import { MARK_LABEL, MARK_RANK, REASON_LABEL } from "./marks";
 import { formatAge, formatSpan } from "./time";
 
 /** The width before the first measure, and in a test with no layout. */
-export const DEFAULT_STRIP_PX = 720;
+const DEFAULT_STRIP_PX = 720;
 const STRIP_HEIGHT_PX = 28;
 /** The id of the hatch pattern for "not observed". `App` draws it once for the page. */
 export const NOT_OBSERVED_PATTERN = "not-observed-hatch";
@@ -38,7 +37,7 @@ export function Strip(props: { strip: StripData }): ReactElement {
           <rect
             key={rect.x}
             data-mark={rect.mark}
-            className={`mark mark--${rect.mark}`}
+            className={`mark--${rect.mark}`}
             x={rect.x}
             y={0}
             width={rect.width}
@@ -58,7 +57,7 @@ export function Strip(props: { strip: StripData }): ReactElement {
 }
 
 /** "down, TCP failed, Nov 16 03:10 to 03:25 UTC, 15 min". */
-export function describeRun(run: StripRun): string {
+function describeRun(run: StripRun): string {
   const reason = run.reason === null ? "" : `, ${REASON_LABEL[run.reason]}`;
   const duration = formatAge(Date.parse(run.end) - Date.parse(run.start));
   return `${MARK_LABEL[run.mark]}${reason}, ${formatSpan(run.start, run.end)}, ${duration}`;

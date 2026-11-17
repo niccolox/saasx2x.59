@@ -16,7 +16,7 @@ from check_bet import CRITERIA_HEADER, Bet, parse, strip_fences, table
 MAX_QUESTIONS = 4
 DECISION_WEEKS = (2, 3, 4)
 
-Question = dict
+Question = dict[str, object]
 LINK_TEXT = re.compile(r"\[([^\]]*)\]\([^)]*\)")
 
 
@@ -96,7 +96,7 @@ STEPS: dict[str, Callable[[Bet, dt.date], list[Question]]] = {
 }
 
 
-def dialog(record: Path, bet_id: str, step: str, today: dt.date) -> list[dict]:
+def dialog(record: Path, bet_id: str, step: str, today: dt.date) -> list[dict[str, list[Question]]]:
     bets = {
         bet.bet_id: bet
         for bet in parse(strip_fences(record.read_text(encoding="utf-8").splitlines()))

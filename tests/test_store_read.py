@@ -155,7 +155,7 @@ async def test_the_three_reads_see_one_state_of_the_database(
     await store.record_result(result_at(check, SLOT))
     late = result_at(check, SLOT + MINUTE)
 
-    def write_between_the_reads(_: MonitoredCheck) -> ReadWindows:
+    def write_between_the_reads(check: MonitoredCheck) -> ReadWindows:
         with psycopg.connect(database_url, autocommit=True) as db:
             db.execute(
                 """INSERT INTO check_results (check_id, scheduled_at, probe_id, account_id,
@@ -172,7 +172,7 @@ async def test_the_three_reads_see_one_state_of_the_database(
                     late.started_at,
                 ),
             )
-        return around_slot(_)
+        return around_slot(check)
 
     during = await read_store.dashboard_rows(OWNER, write_between_the_reads)
     after = await read_store.dashboard_rows(OWNER, around_slot)

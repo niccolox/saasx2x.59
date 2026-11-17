@@ -27,7 +27,7 @@ export function layoutStrip(strip: Strip, widthPx: number): StripRect[] {
   const width = Math.max(1, Math.floor(widthPx));
   const axisStart = Date.parse(strip.start);
   const pxPerMs = width / (Date.parse(strip.end) - axisStart);
-  const shown: (StripRun | undefined)[] = new Array<StripRun | undefined>(width);
+  const shown = new Array<StripRun | undefined>(width);
 
   for (const run of strip.runs) {
     const x0 = (Date.parse(run.start) - axisStart) * pxPerMs;
